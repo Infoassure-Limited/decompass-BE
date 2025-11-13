@@ -143,6 +143,106 @@ class ReportsController extends Controller
         return response()->json(compact('compliance_status', 'pie_chart_series'), 200);
     }
 
+    public function clientProjectManagementClauseReport(Request $request)
+    {
+        $client_id = $this->getClient()->id;
+        $project_id = $request->project_id;
+        $project = Project::find($project_id);
+        if ($project->client_id != $client_id) {
+            return response()->json(['message' => 'Unauthorized action'], 403);
+        }
+
+        $clause_id = $request->clause_id;
+        $assignee_id = $request->assignee_id;
+        $group_by = $request->group_by;
+        $condition = ['client_id' => $client_id, 'project_id' => $project_id];
+        if ($clause_id != '') {
+            $condition = ['client_id' => $client_id, 'project_id' => $project_id, 'assigned_tasks.clause_id' => $clause_id];
+        }
+        $reports = TaskEvidenceUpload::join('expected_task_evidence_module_activity_task', 'expected_task_evidence_module_activity_task.expected_task_evidence_id', '=', 'task_evidence_uploads.expected_task_evidence_id')
+            ->join('module_activity_tasks', 'expected_task_evidence_module_activity_task.module_activity_task_id', '=', 'module_activity_tasks.id')
+            ->join('clauses', 'clauses.id', '=', 'module_activity_tasks.clause_id')
+            ->distinct()
+            ->groupBy('clauses.id')
+            ->where(['task_evidence_uploads.client_id' => $client_id, 'task_evidence_uploads.project_id' => $project_id])
+            ->select(\DB::raw("CONCAT(clauses.name, '-', clauses.description) as name"), \DB::raw('COUNT(CASE WHEN link IS NULL THEN task_evidence_uploads.id END ) as non_compliant'), \DB::raw('COUNT(CASE WHEN link IS NOT NULL THEN task_evidence_uploads.id END ) as compliant'))
+            ->get();
+
+        $categories = [];
+        $compliant = [];
+        $non_compliant = [];
+        foreach ($reports as $key => $report) {
+            $compliant_count = ($report->compliant > 0) ? $report->compliant : 0;
+            $non_compliant_count = ($report->non_compliant > 0) ? $report->non_compliant : 0;
+
+            $total = $compliant_count + $non_compliant_count;
+            $percent_compliant = ($total > 0) ? ($compliant_count / $total) * 100 : 0;
+            $percent_non_compliant = ($total > 0) ? ($non_compliant_count / $total) * 100 : 0;
+            $name = $report->name;
+            $categories[] = $name;
+            $compliant[] = [
+                'name' => $name,
+                'y' => $percent_compliant
+            ];
+
+            $non_compliant[] = [
+                'name' => $name,
+                'y' => $percent_non_compliant,
+            ];
+
+            // $not_applicable[] = [
+            //     'name' => $name,
+            //     'y' => ($report->not_applicable > 0) ? $report->not_applicable : 0,
+            // ];
+
+            // $open_for_imporvement[] = [
+            //     'name' => $name,
+            //     'y' => ($report->open_for_imporvement > 0) ? $report->open_for_imporvement : 0,
+            // ];
+        }
+        $series = [
+            [
+                'name' => 'Non Compliant',
+                'data' => $non_compliant, //array format
+                'color' => '#F00C12',
+                'stack' => 'Management Clause',
+                'dataLabels' => [
+                    'enabled' => false,
+                ],
+            ],
+            [
+                'name' => 'Compliant',
+                'data' => $compliant, //array format
+                'color' => '#00A65A',
+                'stack' => 'Management Clause',
+                'dataLabels' => [
+                    'enabled' => false,
+                ],
+            ],
+            // [
+            //     'name' => 'Opportunity For Improvement',
+            //     'data' => $open_for_imporvement, //array format
+            //     'color' => '#FFA500',
+            //     'stack' => 'Management Clause',
+            //     'dataLabels' => [
+            //         'enabled' => true,
+            //     ],
+            // ],
+            // [
+            //     'name' => 'N/A',
+            //     'data' => $not_applicable, //array format
+            //     'color' => '#cccccc',
+            //     'stack' => 'Management Clause',
+            //     'dataLabels' => [
+            //         'enabled' => true,
+            //     ],
+            // ],
+        ];
+        $subtitle = '';
+        $title = 'Compliance by Requirement';
+        return response()->json(compact('categories', 'series', 'title', 'subtitle'), 200);
+    }
+
     public function clientProjectDataAnalysis(Request $request)
     {
         if (isset($request->client_id) && $request->client_id != '') {

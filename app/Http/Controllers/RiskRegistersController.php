@@ -270,6 +270,50 @@ class RiskRegistersController extends Controller
             ->groupBy('asset_type_name');
         return response()->json(compact('asset_types'), 200);
     }
+    public function fetchAssignedAssetRiskRegisters(Request $request)
+    {
+        $user_id = $this->getUser()->id;
+        $client_id = $this->getClient()->id;
+
+        $asset_types = RiskRegister::where('client_id', $client_id)
+            ->where('assignee_id', $user_id)
+            ->where('asset_id', '!=', null)
+            ->get()
+            ->groupBy('asset_type_name');
+        return response()->json(compact('asset_types'), 200);
+    }
+    public function fetchAssignedBusinessUnitsRiskRegisters(Request $request)
+    {
+        $user_id = $this->getUser()->id;
+        $client_id = $this->getClient()->id;
+
+        $business_units = RiskRegister::join('business_units', 'risk_registers.business_unit_id', 'business_units.id')
+                ->join('business_processes', 'risk_registers.business_process_id', 'business_processes.id')
+        ->where('risk_registers.client_id', $client_id)
+            ->where('assignee_id', $user_id)
+            ->where('risk_registers.business_unit_id', '!=', null)
+            ->select('risk_registers.*', 'business_units.unit_name as business_unit', 'business_processes.name as business_process')
+            ->get()
+            ->groupBy('business_unit');
+        return response()->json(compact('business_units'), 200);
+    }
+
+    public function assignRiskRegisters(Request $request)
+    {
+        $user_id = $this->getUser()->id;
+        $client_id = $this->getClient()->id;
+        $risk_registers = $request->risk_registers;
+        foreach ($risk_registers as $risk_register) {
+            $risk_register = RiskRegister::find($risk_register['id']);
+            if ($risk_register->client_id === $client_id) {
+                
+                $risk_register->assignee_id = $user_id;
+                $risk_register->save();
+            }
+        }
+        return response()->json(['message' => 'Risk Registers Assigned Successfully'], 200);
+    }
+    
     /**
      * Display a listing of the resource.
      *

@@ -225,6 +225,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     Route::post('generate-process-auto-risk-registers', [RiskRegistersController::class, 'autoGenerateAndSaveProcessRiskRegisters']);
     Route::get('fetch-asset-risk-registers', [RiskRegistersController::class, 'fetchAssetRiskRegisters']);
 
+    Route::get('fetch-assigned-asset-risk-registers', [RiskRegistersController::class, 'fetchAssignedAssetRiskRegisters']);
+    Route::get('fetch-assigned-business-units-risk-registers', [RiskRegistersController::class, 'fetchAssignedBusinessUnitsRiskRegisters']);
+
+    Route::post('assign-risk-registers', [RiskRegistersController::class, 'assignRiskRegisters']);
+
+    
 
     Route::get('format-doc-to-sfdt', [DocumentsController::class, 'formatDocToSFDT']);
     Route::post('save-doc-template', [DocumentsController::class, 'saveDocTemplate']);

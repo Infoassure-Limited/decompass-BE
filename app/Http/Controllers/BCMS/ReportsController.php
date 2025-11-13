@@ -116,16 +116,13 @@ class ReportsController extends Controller
         if ($clause_id != '') {
             $condition = ['client_id' => $client_id, 'project_id' => $project_id, 'assigned_tasks.clause_id' => $clause_id];
         }
-        if ($group_by == 'assignee_id') {
-            return $this->filterManagementClauseByAssignee($request);
-        }
         $reports = TaskEvidenceUpload::join('expected_task_evidence_module_activity_task', 'expected_task_evidence_module_activity_task.expected_task_evidence_id', '=', 'task_evidence_uploads.expected_task_evidence_id')
             ->join('module_activity_tasks', 'expected_task_evidence_module_activity_task.module_activity_task_id', '=', 'module_activity_tasks.id')
             ->join('clauses', 'clauses.id', '=', 'module_activity_tasks.clause_id')
             ->distinct()
-            ->groupBy('module_activity_tasks.clause_id')
+            ->groupBy('clauses.id')
             ->where(['task_evidence_uploads.client_id' => $client_id, 'task_evidence_uploads.project_id' => $project_id])
-            ->select('clauses.description as name', \DB::raw('COUNT(CASE WHEN link IS NULL THEN task_evidence_uploads.id END ) as non_compliant'), \DB::raw('COUNT(CASE WHEN link IS NOT NULL THEN task_evidence_uploads.id END ) as compliant'))
+            ->select(\DB::raw("CONCAT(clauses.name, '-', clauses.description) as name"), \DB::raw('COUNT(CASE WHEN link IS NULL THEN task_evidence_uploads.id END ) as non_compliant'), \DB::raw('COUNT(CASE WHEN link IS NOT NULL THEN task_evidence_uploads.id END ) as compliant'))
             ->get();
 
         $categories = [];
@@ -133,11 +130,11 @@ class ReportsController extends Controller
         $non_compliant = [];
         foreach ($reports as $key => $report) {
             $compliant_count = ($report->compliant > 0) ? $report->compliant : 0;
-            $non_compliant_count = ($report->compliant > 0) ? $report->compliant : 0;
+            $non_compliant_count = ($report->non_compliant > 0) ? $report->non_compliant : 0;
 
             $total = $compliant_count + $non_compliant_count;
-            $percent_compliant = ($total > 0) ? (int) ($compliant_count / $total) * 100 : 0;
-            $percent_non_compliant = ($total > 0) ? (int) ($non_compliant_count / $total) * 100 : 0;
+            $percent_compliant = ($total > 0) ? ($compliant_count / $total) * 100 : 0;
+            $percent_non_compliant = ($total > 0) ? ($non_compliant_count / $total) * 100 : 0;
             $name = $report->name;
             $categories[] = $name;
             $compliant[] = [
@@ -162,18 +159,18 @@ class ReportsController extends Controller
         }
         $series = [
             [
-                'name' => 'Compliant',
-                'data' => $compliant, //array format
-                'color' => '#00A65A',
+                'name' => 'Non Compliant',
+                'data' => $non_compliant, //array format
+                'color' => '#F00C12',
                 'stack' => 'Management Clause',
                 'dataLabels' => [
                     'enabled' => false,
                 ],
             ],
             [
-                'name' => 'Non Compliant',
-                'data' => $non_compliant, //array format
-                'color' => '#F00C12',
+                'name' => 'Compliant',
+                'data' => $compliant, //array format
+                'color' => '#00A65A',
                 'stack' => 'Management Clause',
                 'dataLabels' => [
                     'enabled' => false,
