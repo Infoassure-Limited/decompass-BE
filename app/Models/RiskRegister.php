@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RiskRegister extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $fillable = ['module', 'client_id', 'business_unit_id', 'business_process_id', 'sub_unit', 'risk_id', 'asset_type_id', 'asset_type_name', 'asset_id', 'asset_name', 'type', 'sub_type', 'threat', 'vulnerability_description', 'outcome', 'risk_owner', 'control_no', 'control_location', 'control_description', 'control_frequency', 'control_owner', 'control_type', 'nature_of_control', 'application_used_for_control', 'compensating_control', 'test_procedures', 'sample_size', 'data_required', 'link_to_evidence', 'test_conclusion', 'gap_description', 'tod_improvement_opportunity', 'recommendation', 'responsibility', 'timeline', 'tod_gap_status', 'submit_mode'];
+    protected $fillable = ['module', 'client_id', 'business_unit_id', 'business_process_id', 'sub_unit', 'risk_id', 'asset_type_id', 'asset_type_name', 'asset_id', 'asset_name', 'type', 'sub_type', 'threat', 'vulnerability_description', 'outcome', 'risk_owner', 'assignee_ids', 'control_no', 'control_location', 'control_description', 'control_frequency', 'control_owner', 'control_type', 'nature_of_control', 'application_used_for_control', 'compensating_control', 'test_procedures', 'sample_size', 'data_required', 'link_to_evidence', 'test_conclusion', 'gap_description', 'tod_improvement_opportunity', 'recommendation', 'responsibility', 'timeline', 'tod_gap_status', 'submit_mode'];
 
     public function client()
     {
@@ -31,5 +32,12 @@ class RiskRegister extends Model
     public function asset()
     {
         return $this->belongsTo(Asset::class);
+    }
+    protected function assigneeIds(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => json_decode($value, true),
+            set: fn($value) => json_encode($value),
+        );
     }
 }
