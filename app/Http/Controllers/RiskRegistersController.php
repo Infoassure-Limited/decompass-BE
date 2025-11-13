@@ -448,7 +448,7 @@ class RiskRegistersController extends Controller
 
 
         $asset_risk_registers = [];
-        $business_risk_registers = [];
+        $business_risk_registers = []; 
         if ($asset_id !== null) {
             $asset_risk_registers_query = RiskRegister::leftJoin('business_units', 'risk_registers.business_unit_id', 'business_units.id')
                 ->leftJoin('business_processes', 'risk_registers.business_process_id', 'business_processes.id')
