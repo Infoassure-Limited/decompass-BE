@@ -230,8 +230,8 @@
                                         <p />
                                         <p />
                                         <div>
-                                            You can <a href="{{ env('FRONTEND_URL') }}/login" target="_blank">Sign
-                                                In</a> for more details.
+                                            Click on <a href="{{ env('FRONTEND_URL') }}/login" target="_blank">Sign
+                                                In</a> to access your account.
                                         </div>
                                     </div>
                                 </div>

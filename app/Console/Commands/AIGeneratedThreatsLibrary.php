@@ -112,7 +112,8 @@ class AIGeneratedThreatsLibrary extends Command
         $content = $message . $instruction;
 
         $result = OpenAI::chat()->create([
-            'model' => 'gpt-3.5-turbo',
+            'model' =>'gpt-5',
+            // 'model' => 'gpt-3.5-turbo',
             //'model' => 'gpt-4o-mini',
             'messages' => [
                 ['role' => 'user', 'content' => $content],

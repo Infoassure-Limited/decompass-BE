@@ -276,10 +276,10 @@ class RiskRegistersController extends Controller
         $client_id = $this->getClient()->id;
 
         $asset_types = RiskRegister::where('client_id', $client_id)
-            ->whereIn('assignee_ids', [$user_id])
+            ->where('assignee_ids', 'LIKE', "%$user_id%")
             ->where('asset_id', '!=', null)
             ->get()
-            ->groupBy('asset_type_name');
+            ->groupBy('asset_name');
         return response()->json(compact('asset_types'), 200);
     }
     public function fetchAssignedBusinessUnitsRiskRegisters(Request $request)
@@ -290,7 +290,7 @@ class RiskRegistersController extends Controller
         $business_units = RiskRegister::join('business_units', 'risk_registers.business_unit_id', 'business_units.id')
                 ->join('business_processes', 'risk_registers.business_process_id', 'business_processes.id')
         ->where('risk_registers.client_id', $client_id)
-            ->whereIn('assignee_ids', [$user_id])
+            ->where('assignee_ids', 'LIKE', "%$user_id%")
             ->where('risk_registers.business_unit_id', '!=', null)
             ->select('risk_registers.*', 'business_units.unit_name as business_unit', 'business_processes.name as business_process')
             ->get()
