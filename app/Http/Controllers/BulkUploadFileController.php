@@ -28,10 +28,7 @@ class BulkUploadFileController extends Controller
         }
         $type = $request->type;
         $file = $request->file('file');
-        $filename = $type . '_' . time() . '_' . $file->getClientOriginalName();
-        $path = Storage::disk('public')->putFileAs('uploads', $file, $filename);
         // $path = Storage::disk('spaces')->putFileAs('uploads', $file, $filename);
-
         if ($file->getClientOriginalExtension() === 'csv') {
             $csv = Reader::createFromPath($file->getPathname(), 'r');
             $csv->setHeaderOffset(0);
@@ -44,7 +41,16 @@ class BulkUploadFileController extends Controller
             $columns = array_shift($data);
         }
 
-        $fileRecord = BulkUploadFile::create([
+        if (empty($columns)) {
+            return response()->json(['message' => 'Headers are empty!!!. The first row of your file should be for headers, identifying each column'], 500);
+        }
+        if (in_array('Name', $columns) || in_array('Title', $columns) || in_array('Subject', $columns)) {
+
+            
+        $filename = $type . '_' . time() . '_' . $file->getClientOriginalName();
+        $path = Storage::disk('public')->putFileAs('uploads', $file, $filename);
+
+            $fileRecord = BulkUploadFile::create([
             'client_id' => $client->id,
             'user_id' => $user->id,
             'type' => $type,
@@ -56,6 +62,13 @@ class BulkUploadFileController extends Controller
         ]);
 
         return response()->json(['message' => 'File uploaded', 'file_id' => $fileRecord->id], 201);
+            
+        } else {
+            return response()->json(['message' => 'Data Identity Required!!!. For proper data identification and processing, please ensure that a column with any of the header: "Name", "Title" OR "Subject", exists'], 500);
+        }
+        
+
+        
     }
 
     public function index(Request $request)
