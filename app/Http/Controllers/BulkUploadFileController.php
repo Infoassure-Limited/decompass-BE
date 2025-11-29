@@ -53,6 +53,7 @@ class BulkUploadFileController extends Controller
         $highestColumn = $sheet->getHighestColumn();
         $highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn);
 
+        set_time_limit(600);
         for ($row = 1; $row <= $highestRow; $row++) {
             for ($col = 1; $col <= $highestColumnIndex; $col++) {
                 $coord = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $row;
@@ -115,6 +116,7 @@ class BulkUploadFileController extends Controller
         }
 
         $fileRecord = $this->performBulkUpload($client, $user, $type, $columns, $data, $dropdowns);
+        set_time_limit(300);
 
         return response()->json(['message' => 'File uploaded', 'file_id' => $fileRecord->id], 201);
         
