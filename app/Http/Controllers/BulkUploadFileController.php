@@ -44,6 +44,7 @@ class BulkUploadFileController extends Controller
         $data = $sheet->toArray(null, true, true, true);
         $columns = array_shift($data);
         $columns = array_map('strtoupper', $columns);
+        $columns = array_map('trim', $columns);
 
         // Detect Dropdowns (Data Validation)
         $dropdowns = [];
