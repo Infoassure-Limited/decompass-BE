@@ -54,10 +54,8 @@ class BusinessUnitsController extends Controller
             'business_units.*.group_name' => 'required|string|max:255',
             'business_units.*.unit_name' => 'required|string|max:255',
             'business_units.*.function_performed' => 'nullable|string|max:2000',
-            'business_units.*.contact_phone' => 'nullable|string|max:50',
+            // 'business_units.*.contact_phone' => 'nullable|string|max:50',
         ]);
-
-        $this->saveDefaultBiaTimeRecoveryRequirement($client_id);
 
         $business_units = $data['business_units'];
         foreach ($business_units as $bu) {

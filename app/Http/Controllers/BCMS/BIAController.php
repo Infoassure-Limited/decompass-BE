@@ -20,6 +20,10 @@ class BIAController extends Controller
     public function fetchBIA(Request $request)
     {
         $client_id = $request->client_id;
+        
+        $bia_obj = new BiaTimeRecoveryRequirement();
+        $bia_obj->saveDefaultBiaTimeRecoveryRequirement($client_id);
+
         $this->store($client_id);
         $bias = BusinessImpactAnalysis::with('impacts')
             ->join(getDatabaseName('mysql') . 'business_units as business_units', 'business_units.id', 'business_impact_analyses.business_unit_id')

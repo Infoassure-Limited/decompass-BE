@@ -47,7 +47,8 @@ class RouteServiceProvider extends ServiceProvider
                     base_path('routes/ismsAPI.php'),
                     base_path('routes/ndpaAPI.php'),
                     base_path('routes/policyAPI.php'),
-                    base_path('routes/vddAPI.php')
+                    base_path('routes/vddAPI.php'),
+                    base_path('routes/pamAPI.php')
                 ]);
 
             // Route::prefix('api')
